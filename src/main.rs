@@ -9,12 +9,12 @@ pub mod random;
 fn main() {
     const BENCH_BBS: bool = false;
     const BENCH_LCG: bool = false;
-    const BENCH_PRIME_LCG: bool = false;
+    const BENCH_PRIME_LCG: bool = true;
 
 
     // // Generate Prime
     // let now = BigUint::from(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis());
-    // let prime = gen_prime_number_lcg(2048, 10, now);
+    // let prime = gen_prime_number_lcg(2048, 1000, now);
     // println!("Generated Prime: {}", prime);
 
     if BENCH_BBS {
@@ -65,7 +65,7 @@ fn main() {
     }
     if BENCH_PRIME_LCG {
         println!("Prime Generator With Linear Congruent Generator Benchmark:");
-        let sizes: Vec<usize> = vec![40, 56, 80, 128, 168, 224, 256, 512, 1024, 2048, 4096];
+        let sizes: Vec<usize> = vec![40, 56, 80, 128, 168, 224, 256, 512, 1024, 2048];
         for size in sizes {
             let initial_time = Instant::now();
             let mut size_time = Duration::new(0, 0);

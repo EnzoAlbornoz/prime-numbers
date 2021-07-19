@@ -1,4 +1,7 @@
-use std::{ops::DivAssign, time::{SystemTime, UNIX_EPOCH}};
+use std::{
+    ops::DivAssign,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use num::{traits::Pow, BigUint, FromPrimitive, Integer};
 
@@ -17,36 +20,42 @@ pub fn is_prime_miller_rabin(maybe_prime: BigUint, rounds: usize) -> bool {
         return false;
     }
     // Find s = max{r in N / (2^r) % (n-1) == 0}
-    let mut max_exp_that_divides = 1;
+    let mut max_exp_that_divides = 0;
     // "d" value in algorithm (The odd part in n-1)
-    let maybe_prime_minus_one = &maybe_prime - &big_one;
     let mut maybe_odd_part = &maybe_prime - &big_one;
     while maybe_odd_part.is_even() {
         max_exp_that_divides += 1;
         maybe_odd_part.div_assign(&big_two);
     }
     // Repeat a arbitrary number of rounds
-    let seed = BigUint::from_i64(1726378162783618261i64).unwrap();
+    let seed = BigUint::from(
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis(),
+    );
     for _ in 0..rounds {
         // Generate a Random Number
         let random = gen_linear_congruential_generator(
-            BigUint::from_i32(2).unwrap().pow(64u32),
+            BigUint::from_i32(2)
+                .unwrap()
+                .pow(maybe_prime.bits().next_power_of_two()),
             BigUint::from_i64(6364136223846793005i64).unwrap(),
             BigUint::from(1u32),
             seed.clone(),
         )
         .unwrap();
         // Compute x ← a^d mod n
-        let x_value = random.modpow(&maybe_odd_part, &maybe_prime);
+        let mut x_value = random.modpow(&maybe_odd_part, &maybe_prime);
         // Check Inconclusive
-        if x_value == big_one || x_value == maybe_prime_minus_one {
+        if x_value == big_one || x_value == (&maybe_prime - &big_one) {
             continue;
         }
         // Check With 2^r
         let mut inconclusive = false;
         for _ in 0..(max_exp_that_divides - 1) {
-            let x_value = random.modpow(&big_two, &maybe_prime);
-            if x_value == maybe_prime_minus_one {
+            x_value = x_value.modpow(&big_two, &maybe_prime);
+            if x_value == (&maybe_prime - &big_one) {
                 inconclusive = true;
                 break;
             }
@@ -95,8 +104,12 @@ fn test_is_prime_miller_rabin() {
 #[test]
 fn test_gen_prime_number_lcg_64bits() {
     // Generate Prime
-    let now = BigUint::from(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs());
+    let now = BigUint::from(
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs(),
+    );
     let prime = gen_prime_number_lcg(64, 10, now);
     println!("Generated Prime: {}", prime);
 }
-
