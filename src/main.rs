@@ -12,10 +12,10 @@ fn main() {
     const BENCH_PRIME_LCG: bool = false;
 
 
-    // Generate Prime
-    let now = BigUint::from(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis());
-    let prime = gen_prime_number_lcg(2048, 10, now);
-    println!("Generated Prime: {}", prime);
+    // // Generate Prime
+    // let now = BigUint::from(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis());
+    // let prime = gen_prime_number_lcg(2048, 10, now);
+    // println!("Generated Prime: {}", prime);
 
     if BENCH_BBS {
         println!("BlumBlum Shub Benchmark:");
