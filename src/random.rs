@@ -19,6 +19,12 @@ impl fmt::Display for Error {
     }
 }
 
+/// Blum Blum Shub Random Number Generator
+/// # Arguments
+/// * `p_val` - A prime number that will form N
+/// * `q_val` - A prime number that will form N
+/// * `seed`  - A number that is coprime with N. It will be X0
+/// * `size`  - The bit length of the generated number (MSB = 1 Not guaranteed)
 pub fn gen_blum_blum_shub(
     p_val: BigUint,
     q_val: BigUint,
@@ -37,26 +43,34 @@ pub fn gen_blum_blum_shub(
     }
     // Alloc Space for Generated Value
     let two_val = BigUint::from(2u32);
+    // Defines N = p * q
     let n_val = p_val.mul(q_val);
+    // Alloc Space for Generated Random Value
     let mut generated_number: BitVec<Lsb0, u8> = bitvec![Lsb0, u8; 0; size];
+    // Initialize the Current Iteration with the Given Seed
     let mut current_iteration = seed.clone();
     // Generate First Bit
     generated_number.set(0, current_iteration.bit(0));
     // Generate Sequence
     for idx in 1..size {
-        // Gen Next Step
+        // Gen Next Step (Xn = (Xn-1)^2 mod N)
         current_iteration = current_iteration.modpow(&two_val, &n_val);
-        // Gen Bit for This Number
+        // Gen Bit for This Number (Parity Test)
         generated_number.set(idx, current_iteration.bit(0))
     }
     // Return Generated Value
     Ok(BigUint::from_bytes_le(generated_number.as_raw_slice()))
 }
 
-// pub fn gen_linear_feedback_shift_register(seed: BigUint, size: usize, taps: Vec<usize>) {
-    
-// }
-
+/// # Linear Congruential Generator
+/// For an initial value X0, computes the next value of this sequence using the
+/// operation: Xn = a * (Xn-1) + C mod N
+/// 
+/// ## Arguments
+/// * `modulus` - The `N` value
+/// * `multiplier` - The `a` value
+/// * `increment` - The `C` value
+/// * `seed` - The `Xn-1` value
 pub fn gen_linear_congruential_generator(
     modulus: BigUint,
     multiplier: BigUint,
@@ -67,14 +81,9 @@ pub fn gen_linear_congruential_generator(
     // Alloc Final Number Data
     let mut current_iteration = seed.clone();
     // Generate Next
-    loop {
-        current_iteration *= &multiplier;
-        current_iteration += &increment;
-        current_iteration = current_iteration.mod_floor(&modulus);
-        if current_iteration.bits() == (modulus.bits() - 1) {
-           break; 
-        }
-    }
+    current_iteration *= &multiplier;
+    current_iteration += &increment;
+    current_iteration = current_iteration.mod_floor(&modulus);
     // Return Generated Value
     Ok(current_iteration)
 }
